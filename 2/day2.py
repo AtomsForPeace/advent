@@ -1,11 +1,8 @@
-from typing import List, Optional
+from typing import List
 from itertools import permutations
 
 
-def function_1(
-    inputs: List[int],
-    starting_index: Optional[int] = None
-) -> List[int]:
+def function_1(inputs: List[int]) -> List[int]:
     index = 0
     while True:
         if len(inputs[index:]) < 4:
