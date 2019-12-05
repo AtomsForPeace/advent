@@ -45,7 +45,7 @@ def function_2(inputs: List[int]) -> int:
 
 
 if __name__ == '__main__':
-    with open('day2.txt') as f:
+    with open('input.txt') as f:
         inputs = [int(i) for i in f.read().split(',')]
 
         # part 1

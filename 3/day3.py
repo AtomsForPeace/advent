@@ -96,7 +96,7 @@ def test_2_function_2():
 
 
 if __name__ == '__main__':
-    with open('day3.txt') as f:
+    with open('input.txt') as f:
         _wire_1, _wire_2 = f.readlines()
 
     wire_1 = _wire_1.split(',')

@@ -1,9 +1,6 @@
 import math
 
 
-# Part 1
-
-
 def function_part_1(mass: int) -> int:
     return math.floor(mass / 3) - 2
 
@@ -12,9 +9,6 @@ def test_function_part_1():
     tests = [(12, 2), (14, 2), (1969, 654), (100756, 33583)]
     for mass, fuel in tests:
         assert function_part_1(mass) == fuel
-
-
-# Part 2
 
 
 def function_part_2(mass: int, current_level: int) -> int:
@@ -31,7 +25,7 @@ def test_function_part_2():
 
 
 if __name__ == '__main__':
-    with open('day1.txt') as f:
+    with open('input.txt') as f:
         lines = [int(line) for line in f.readlines()]
 
     print('Part 1')
