@@ -113,29 +113,13 @@ class IntCode:
 
 
 def get_thruster_signal(inputs: List[int], phase_settings: List[int]) -> int:
-    A = IntCode(
-        inputs=inputs[:],
-        phase_setting=phase_settings[0],
-    )
-    B = IntCode(
-        inputs=inputs[:],
-        phase_setting=phase_settings[1],
-    )
-    C = IntCode(
-        inputs=inputs[:],
-        phase_setting=phase_settings[2],
-    )
-    D = IntCode(
-        inputs=inputs[:],
-        phase_setting=phase_settings[3],
-    )
-    E = IntCode(
-        inputs=inputs[:],
-        phase_setting=phase_settings[4],
-    )
+    amps = [
+        IntCode(inputs=inputs[:], phase_setting=phase_setting)
+        for phase_setting in phase_settings
+    ]
     previous_signal = 0
     while True:
-        for amp in [A, B, C, D, E, ]:
+        for amp in amps:
             try:
                 previous_signal = next(amp.run_operation(previous_signal))
             except StopIteration:
