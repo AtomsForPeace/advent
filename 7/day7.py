@@ -2,34 +2,6 @@ from typing import List, Tuple
 from itertools import permutations
 
 
-def get_params(inputs, index, modes) -> Tuple[int, int, int]:
-    _first, _second, overwrite = inputs[index + 1:index + 4]
-    if modes[0] == 1:
-        first = _first
-    elif modes[0] == 0:
-        first = inputs[_first]
-    else:
-        raise Exception(
-            'Something went horribly wrong: {}'.format(modes[0])
-        )
-
-    if modes[1] == 1:
-        second = _second
-    elif modes[1] == 0:
-        second = inputs[_second]
-    else:
-        raise Exception(
-            'Something went horribly wrong: {}'.format(modes[1])
-        )
-
-    if modes[2] != 0:
-        raise Exception(
-            'Something went horribly wrong: {}'.format(modes[2])
-        )
-
-    return first, second, overwrite
-
-
 def parse_mode(instructions: str) -> Tuple[List[int], int]:
     modes = []
     for digit in reversed(instructions):
@@ -80,13 +52,12 @@ class IntCode:
         self.run = False
 
     def _add(self):
-        first, second, overwrite = get_params(self.inputs, self.index, self.modes)
-        print(first, second, overwrite)
+        first, second, overwrite = self.get_params()
         self.inputs[overwrite] = first + second
         self.index += 4
 
     def _multiply(self):
-        first, second, overwrite = get_params(self.inputs, self.index, self.modes)
+        first, second, overwrite = self.get_params()
         self.inputs[overwrite] = first * second
         self.index += 4
 
@@ -106,21 +77,21 @@ class IntCode:
         return self.output
 
     def _jump_if_true(self):
-        first, second, _ = get_params(self.inputs, self.index, self.modes)
+        first, second, _ = self.get_params()
         if first:
             self.index = second
             return
         self.index += 3
 
     def _jump_if_false(self):
-        first, second, _ = get_params(self.inputs, self.index, self.modes)
+        first, second, _ = self.get_params()
         if not first:
             self.index = second
             return
         self.index += 3
 
     def _less_than(self):
-        first, second, overwrite = get_params(self.inputs, self.index, self.modes)
+        first, second, overwrite = self.get_params()
         if first < second:
             self.inputs[overwrite] = 1
         else:
@@ -128,12 +99,39 @@ class IntCode:
         self.index += 4
 
     def _equals(self):
-        first, second, overwrite = get_params(self.inputs, self.index, self.modes)
+        first, second, overwrite = self.get_params()
         if first == second:
             self.inputs[overwrite] = 1
         else:
             self.inputs[overwrite] = 0
         self.index += 4
+
+    def get_params(self) -> Tuple[int, int, int]:
+        _first, _second, overwrite = self.inputs[self.index + 1:self.index + 4]
+        if self.modes[0] == 1:
+            first = _first
+        elif self.modes[0] == 0:
+            first = self.inputs[_first]
+        else:
+            raise Exception(
+                'Something went horribly wrong: {}'.format(self.modes[0])
+            )
+
+        if self.modes[1] == 1:
+            second = _second
+        elif self.modes[1] == 0:
+            second = self.inputs[_second]
+        else:
+            raise Exception(
+                'Something went horribly wrong: {}'.format(self.modes[1])
+            )
+
+        if self.modes[2] != 0:
+            raise Exception(
+                'Something went horribly wrong: {}'.format(self.modes[2])
+            )
+
+        return first, second, overwrite
 
 
 def get_thruster_signal(inputs: List[int], phase_settings: List[int]) -> int:
@@ -146,7 +144,6 @@ def get_thruster_signal(inputs: List[int], phase_settings: List[int]) -> int:
         for amp in amps:
             try:
                 previous_signal = next(amp.run_operation(previous_signal))
-                print(previous_signal)
             except StopIteration:
                 return previous_signal
 
