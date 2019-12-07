@@ -52,64 +52,88 @@ class IntCode:
         self.index = 0
 
     def run_operation(self, signal):
-        output = 0
-        while True:
+        self.signal = signal
+        self.output = 0
+        operation_mapping = {
+            99: self._finish,
+            1: self._add,
+            2: self._multiply,
+            3: self._input,
+            4: self._output,
+            5: self._jump_if_true,
+            6: self._jump_if_false,
+            7: self._less_than,
+            8: self._equals,
+        }
+        self.run = True
+        while self.run:
             instructions = str(self.inputs[self.index])
             op_code = int(instructions[-2:])
-            modes = parse_mode(instructions[:-2])
-            if op_code == 99:
-                return output
-            elif op_code == 1:
-                first, second, overwrite = get_params(self.inputs, self.index, modes)
-                self.inputs[overwrite] = first + second
-                self.index += 4
-            elif op_code == 2:
-                first, second, overwrite = get_params(self.inputs, self.index, modes)
-                self.inputs[overwrite] = first * second
-                self.index += 4
-            elif op_code == 3:
-                if self.phase_setting_used:
-                    overwrite = self.index + 1
-                    self.inputs[self.inputs[overwrite]] = signal
-                else:
-                    overwrite = self.index + 1
-                    self.inputs[self.inputs[overwrite]] = self.phase_setting
-                    self.phase_setting_used = True
-                self.index += 2
-            elif op_code == 4:
-                output = self.inputs[self.inputs[self.index + 1]]
-                self.index += 2
-                yield output
-            elif op_code == 5:
-                first, second, _ = get_params(self.inputs, self.index, modes)
-                if first:
-                    self.index = second
-                    continue
-                self.index += 3
-            elif op_code == 6:
-                first, second, _ = get_params(self.inputs, self.index, modes)
-                if not first:
-                    self.index = second
-                    continue
-                self.index += 3
-            elif op_code == 7:
-                first, second, overwrite = get_params(self.inputs, self.index, modes)
-                if first < second:
-                    self.inputs[overwrite] = 1
-                else:
-                    self.inputs[overwrite] = 0
-                self.index += 4
-            elif op_code == 8:
-                first, second, overwrite = get_params(self.inputs, self.index, modes)
-                if first == second:
-                    self.inputs[overwrite] = 1
-                else:
-                    self.inputs[overwrite] = 0
-                self.index += 4
-            else:
-                raise Exception(
-                    'Something went horribly wrong: {}'.format(op_code)
-                )
+            self.modes = parse_mode(instructions[:-2])
+
+            # this either returns output or nothing
+            r = operation_mapping[op_code]()
+            if r:
+                yield r
+
+    def _finish(self):
+        self.run = False
+
+    def _add(self):
+        first, second, overwrite = get_params(self.inputs, self.index, self.modes)
+        print(first, second, overwrite)
+        self.inputs[overwrite] = first + second
+        self.index += 4
+
+    def _multiply(self):
+        first, second, overwrite = get_params(self.inputs, self.index, self.modes)
+        self.inputs[overwrite] = first * second
+        self.index += 4
+
+    def _input(self):
+        if self.phase_setting_used:
+            overwrite = self.index + 1
+            self.inputs[self.inputs[overwrite]] = self.signal
+        else:
+            overwrite = self.index + 1
+            self.inputs[self.inputs[overwrite]] = self.phase_setting
+            self.phase_setting_used = True
+        self.index += 2
+
+    def _output(self):
+        self.output = self.inputs[self.inputs[self.index + 1]]
+        self.index += 2
+        return self.output
+
+    def _jump_if_true(self):
+        first, second, _ = get_params(self.inputs, self.index, self.modes)
+        if first:
+            self.index = second
+            return
+        self.index += 3
+
+    def _jump_if_false(self):
+        first, second, _ = get_params(self.inputs, self.index, self.modes)
+        if not first:
+            self.index = second
+            return
+        self.index += 3
+
+    def _less_than(self):
+        first, second, overwrite = get_params(self.inputs, self.index, self.modes)
+        if first < second:
+            self.inputs[overwrite] = 1
+        else:
+            self.inputs[overwrite] = 0
+        self.index += 4
+
+    def _equals(self):
+        first, second, overwrite = get_params(self.inputs, self.index, self.modes)
+        if first == second:
+            self.inputs[overwrite] = 1
+        else:
+            self.inputs[overwrite] = 0
+        self.index += 4
 
 
 def get_thruster_signal(inputs: List[int], phase_settings: List[int]) -> int:
@@ -122,6 +146,7 @@ def get_thruster_signal(inputs: List[int], phase_settings: List[int]) -> int:
         for amp in amps:
             try:
                 previous_signal = next(amp.run_operation(previous_signal))
+                print(previous_signal)
             except StopIteration:
                 return previous_signal
 
