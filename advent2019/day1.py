@@ -25,7 +25,7 @@ def test_function_part_2():
 
 
 if __name__ == '__main__':
-    with open('input.txt') as f:
+    with open('data/input1.txt') as f:
         lines = [int(line) for line in f.readlines()]
 
     print('Part 1')
