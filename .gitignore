@@ -22,3 +22,8 @@ venv/
 *.swp
 node_modules
 .vscode/
+
+# elm-package generated files
+elm-stuff
+# elm-repl generated files
+repl-temp-*
