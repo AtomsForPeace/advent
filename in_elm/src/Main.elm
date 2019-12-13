@@ -1,6 +1,6 @@
 module Main exposing (main)
 
-import Html exposing (Html)
+import Html exposing (Html, div, text)
 
 unsafeToInt : String -> Int
 unsafeToInt string =
@@ -16,17 +16,30 @@ split_inputs str =
         |> List.filter (\s -> s /= "") 
         |> List.map unsafeToInt
 
-fuel_counter_upper : Int -> Int
-fuel_counter_upper mass = 
+fuel_counter_upper_basic : Int -> Int
+fuel_counter_upper_basic mass =
     (mass // 3) - 2
 
+fuel_counter_upper_advanced : Int -> Int -> Int
+fuel_counter_upper_advanced mass currentFuel =
+    let
+        fuel = fuel_counter_upper_basic mass
+    in
+        if fuel <= 0
+            then currentFuel
+            else fuel_counter_upper_advanced fuel (currentFuel + fuel)
+
 sum : List Int -> Int
-sum ints = 
+sum ints =
     List.foldl (+) 0 ints 
 
 main = 
-    Html.text 
-    (String.fromInt (sum (List.map fuel_counter_upper (split_inputs raw_input))))
+    div []
+        [ text (
+            "Part 1: " ++ String.fromInt (sum (List.map fuel_counter_upper_basic (split_inputs raw_input))))
+        , div [] [text (
+            "Part 2: " ++ String.fromInt (sum (List.map (\mass -> (fuel_counter_upper_advanced mass 0)) (split_inputs raw_input))))]
+        ]
 
 raw_input : String
 raw_input = """
